@@ -3,47 +3,44 @@ version: 1.0.0
 main: com.tinyplus.TinyPlus
 api-version: 1.21
 author: YourName
-description: TinyPlus Ultimate - уменьшение, позы, перенос, анимации
+description: TinyPlus Ultimate - уменьшение, анимации, перенос, сон с выбором поз
 
 commands:
   smoll:
-    description: Уменьшить игрока до 3 пикселей
+    description: Уменьшить игрока
     usage: /smoll <ник>
   unsmoll:
-    description: Вернуть нормальный размер
-    usage: /unsmoll <ник>
-  stand:
-    description: Слезть с маленького игрока
-    usage: /stand
+    description: Вернуть размер
+    usage: /unsmoll [ник]
+  carry:
+    description: Взять маленького на руки
+    usage: /carry <ник>
+  pocket:
+    description: Положить в карман
+    usage: /pocket <ник>
+  shoe:
+    description: Засунуть в кроссовок
+    usage: /shoe <ник>
+  drop:
+    description: Опустить
+    usage: /drop
   sit:
     description: Сесть
     usage: /sit
   lie:
     description: Лечь
     usage: /lie
-  carry:
-    description: Взять ближайшего маленького на руки
-    usage: /carry
-  drop:
-    description: Опустить маленького игрока
-    usage: /drop
-  poses:
-    description: Открыть меню поз переноса
-    usage: /poses
-  animlist:
-    description: Открыть меню анимаций
-    usage: /animlist <ник>
+  stand:
+    description: Встать
+    usage: /stand
   anim:
-    description: Выполнить анимацию
-    usage: /anim <номер> <игрок>
-  carrypose:
-    description: Сменить позу переноса
-    usage: /carrypose <номер> <игрок>
-  sleeppose:
-    description: Выбрать позу для сна
-    usage: /sleeppose <номер> <игрок>
+    description: Анимация (1-погладить, 2-поцеловать, 3-подбросить)
+    usage: /anim <ник> <1-3>
+  pose:
+    description: Выбрать позу для сна (1-5)
+    usage: /pose <1-5>
   visible:
-    description: Сделать себя полностью видимым
+    description: Стать видимым
     usage: /visible
 
 permissions:
