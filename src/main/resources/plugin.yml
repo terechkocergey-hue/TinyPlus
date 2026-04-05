@@ -42,7 +42,7 @@ commands:
   sleeppose:
     description: Выбрать позу для сна
     usage: /sleeppose <номер> <игрок>
-      visible:
+  visible:
     description: Сделать себя полностью видимым
     usage: /visible
 
