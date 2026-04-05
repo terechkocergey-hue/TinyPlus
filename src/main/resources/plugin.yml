@@ -3,19 +3,36 @@ version: 1.0.0
 main: com.tinyplus.TinyPlus
 api-version: 1.21
 author: YourName
-description: TinyPlus Ultimate - уменьшение до 3px, анимации, перенос, сон
+description: TinyPlus Ultimate - уменьшение, позы, перенос, анимации
 
 commands:
   smoll:
     description: Уменьшить игрока до 3 пикселей
     usage: /smoll <ник>
-    aliases: [tiny]
   unsmoll:
     description: Вернуть нормальный размер
     usage: /unsmoll <ник>
   stand:
     description: Слезть с маленького игрока
     usage: /stand
+  sit:
+    description: Сесть
+    usage: /sit
+  lie:
+    description: Лечь
+    usage: /lie
+  carry:
+    description: Взять ближайшего маленького на руки
+    usage: /carry
+  drop:
+    description: Опустить маленького игрока
+    usage: /drop
+  poses:
+    description: Открыть меню поз переноса
+    usage: /poses
+  animlist:
+    description: Открыть меню анимаций
+    usage: /animlist <ник>
   anim:
     description: Выполнить анимацию
     usage: /anim <номер> <игрок>
