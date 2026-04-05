@@ -20,24 +20,25 @@ public class AnimationManager {
     }
     
     public void openMenu(Player big, Player small) {
-        Component.Builder builder = Component.text();
-        builder.append(Component.text("§8╔══════════════════════════════════════════════════════════╗\n"));
-        builder.append(Component.text("§l§d          🎭 АНИМАЦИИ С §e§l" + small.getName() + "\n"));
-        builder.append(Component.text("§8╠══════════════════════════════════════════════════════════╣\n"));
+        Component message = Component.text()
+            .append(Component.text("§8╔══════════════════════════════════════════════════════════╗\n"))
+            .append(Component.text("§l§d          🎭 АНИМАЦИИ С §e§l" + small.getName() + "\n"))
+            .append(Component.text("§8╠══════════════════════════════════════════════════════════╣\n"))
+            .build();
         
         for (int i = 0; i < animations.length; i++) {
             Component button = Component.text("§8[§a" + (i+1) + "§8] §f" + animations[i])
                 .hoverEvent(HoverEvent.showText(Component.text("§aНажми чтобы " + animations[i])))
                 .clickEvent(ClickEvent.runCommand("/anim " + (i+1) + " " + small.getName()));
-            builder.append(button);
+            message = message.append(button);
             if ((i + 1) % 3 == 0 || i == animations.length - 1) {
-                builder.append(Component.text("\n"));
+                message = message.append(Component.text("\n"));
             } else {
-                builder.append(Component.text("     "));
+                message = message.append(Component.text("     "));
             }
         }
-        builder.append(Component.text("§8╚══════════════════════════════════════════════════════════╝"));
-        big.sendMessage(builder.build());
+        message = message.append(Component.text("§8╚══════════════════════════════════════════════════════════╝"));
+        big.sendMessage(message);
     }
     
     public void playAnimation(Player big, Player small, int animId) {
