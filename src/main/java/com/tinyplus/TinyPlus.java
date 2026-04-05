@@ -37,7 +37,7 @@ public class TinyPlus extends JavaPlugin implements Listener {
         
         getServer().getPluginManager().registerEvents(this, this);
         
-        // Команды
+        // Команда /smoll
         getCommand("smoll").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player p)) return true;
             if (args.length == 0) return false;
@@ -46,6 +46,7 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
+        // Команда /unsmoll
         getCommand("unsmoll").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player p)) return true;
             if (args.length == 0) return false;
@@ -54,11 +55,74 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
+        // Команда /stand (слезть с маленького)
         getCommand("stand").setExecutor((sender, cmd, label, args) -> {
             if (sender instanceof Player p) poseManager.standUp(p);
             return true;
         });
         
+        // НОВАЯ КОМАНДА /sit
+        getCommand("sit").setExecutor((sender, cmd, label, args) -> {
+            if (sender instanceof Player p) poseManager.toggleSit(p);
+            return true;
+        });
+        
+        // НОВАЯ КОМАНДА /lie
+        getCommand("lie").setExecutor((sender, cmd, label, args) -> {
+            if (sender instanceof Player p) poseManager.toggleLie(p);
+            return true;
+        });
+        
+        // НОВАЯ КОМАНДА /carry (взять ближайшего маленького)
+        getCommand("carry").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player big)) return true;
+            Player target = big.getWorld().getPlayers().stream()
+                .filter(p -> tinyPlayer.isSmall(p) && p.getLocation().distance(big.getLocation()) < 3)
+                .findFirst().orElse(null);
+            if (target != null) {
+                carryManager.pickUp(big, target);
+            } else {
+                big.sendMessage("§cРядом нет маленького игрока!");
+            }
+            return true;
+        });
+        
+        // НОВАЯ КОМАНДА /drop (опустить маленького)
+        getCommand("drop").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player big)) return true;
+            carryManager.drop(big);
+            return true;
+        });
+        
+        // НОВАЯ КОМАНДА /poses (меню поз переноса)
+        getCommand("poses").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player big)) return true;
+            if (carryManager.isCarrying(big)) {
+                Player small = carryManager.getCarriedPlayer(big);
+                if (small != null) carryManager.openCarryMenu(big, small);
+            } else {
+                big.sendMessage("§cТы никого не несёшь!");
+            }
+            return true;
+        });
+        
+        // НОВАЯ КОМАНДА /animlist (меню анимаций)
+        getCommand("animlist").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player big)) return true;
+            if (args.length == 0) {
+                big.sendMessage("§cИспользуй: /animlist <ник>");
+                return true;
+            }
+            Player small = Bukkit.getPlayer(args[0]);
+            if (small != null && tinyPlayer.isSmall(small)) {
+                animationManager.openMenu(big, small);
+            } else {
+                big.sendMessage("§cИгрок не найден или не маленький!");
+            }
+            return true;
+        });
+        
+        // Команда для анимаций
         getCommand("anim").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player big)) return true;
             if (args.length < 2) return false;
@@ -104,19 +168,19 @@ public class TinyPlus extends JavaPlugin implements Listener {
             public void run() {
                 for (Player p : Bukkit.getOnlinePlayers()) {
                     if (carryManager.isCarrying(p)) {
-                        p.sendActionBar("§e🔘 Нажми V чтобы открыть меню переноса");
+                        p.sendActionBar("§e🔘 /poses §f- меню поз, §e/drop §f- опустить");
                     }
                     if (shoeManager.isInShoe(p)) {
-                        p.sendActionBar("§7👟 Ты в кроссовке! Нажми X чтобы вылезти");
+                        p.sendActionBar("§7👟 Ты в кроссовке! /unsmoll чтобы вылезти");
                     }
                     if (sleepManager.isUnderBlanket(p)) {
-                        p.sendActionBar("§b🛏️ Ты под одеялом! Нажми B чтобы вылезти");
+                        p.sendActionBar("§b🛏️ Ты под одеялом! /stand чтобы встать");
                     }
                 }
             }
         }.runTaskTimer(this, 0L, 20L);
         
-        getLogger().info("§aTinyPlus Ultimate 100% версия включён!");
+        getLogger().info("§aTinyPlus Ultimate включён!");
     }
     
     public static TinyPlus getInstance() { return instance; }
@@ -150,23 +214,23 @@ public class TinyPlus extends JavaPlugin implements Listener {
         if (e.getItem() == null) return;
         
         String itemName = e.getItem().getType().toString();
-        String sitButton = getConfig().getString("buttons.sit-on-small");
-        String sitItem = getConfig().getString("buttons.sit");
-        String lieItem = getConfig().getString("buttons.lie");
+        String sitButton = getConfig().getString("buttons.sit");
+        String lieButton = getConfig().getString("buttons.lie");
+        String sitOnSmall = getConfig().getString("buttons.sit-on-small");
         String escapeShoe = getConfig().getString("buttons.escape-shoe");
         String escapeBlanket = getConfig().getString("buttons.escape-blanket");
         
         if (itemName.equalsIgnoreCase(sitButton)) {
+            poseManager.toggleSit(p);
+            e.setCancelled(true);
+        } else if (itemName.equalsIgnoreCase(lieButton)) {
+            poseManager.toggleLie(p);
+            e.setCancelled(true);
+        } else if (itemName.equalsIgnoreCase(sitOnSmall)) {
             Player target = p.getWorld().getPlayers().stream()
                 .filter(pl -> tinyPlayer.isSmall(pl) && pl.getLocation().distance(p.getLocation()) < 2)
                 .findFirst().orElse(null);
             if (target != null) poseManager.sitOnSmall(p, target);
-            e.setCancelled(true);
-        } else if (itemName.equalsIgnoreCase(sitItem)) {
-            poseManager.toggleSit(p);
-            e.setCancelled(true);
-        } else if (itemName.equalsIgnoreCase(lieItem)) {
-            poseManager.toggleLie(p);
             e.setCancelled(true);
         } else if (itemName.equalsIgnoreCase(escapeShoe)) {
             shoeManager.removeFromShoe(p);
