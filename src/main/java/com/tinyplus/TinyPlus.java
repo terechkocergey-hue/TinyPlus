@@ -1,0 +1,187 @@
+package com.tinyplus;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+public class TinyPlus extends JavaPlugin implements Listener {
+    
+    private static TinyPlus instance;
+    private TinyPlayer tinyPlayer;
+    private PoseManager poseManager;
+    private CarryManager carryManager;
+    private SleepManager sleepManager;
+    private AnimationManager animationManager;
+    private ShoeManager shoeManager;
+    
+    @Override
+    public void onEnable() {
+        instance = this;
+        saveDefaultConfig();
+        
+        tinyPlayer = new TinyPlayer(this);
+        poseManager = new PoseManager(this);
+        carryManager = new CarryManager(this);
+        sleepManager = new SleepManager(this);
+        animationManager = new AnimationManager(this);
+        shoeManager = new ShoeManager(this);
+        
+        getServer().getPluginManager().registerEvents(this, this);
+        
+        // Команды
+        getCommand("smoll").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+            if (args.length == 0) return false;
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target != null) tinyPlayer.setSmall(target, true);
+            return true;
+        });
+        
+        getCommand("unsmoll").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+            if (args.length == 0) return false;
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target != null) tinyPlayer.setSmall(target, false);
+            return true;
+        });
+        
+        getCommand("stand").setExecutor((sender, cmd, label, args) -> {
+            if (sender instanceof Player p) poseManager.standUp(p);
+            return true;
+        });
+        
+        getCommand("anim").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player big)) return true;
+            if (args.length < 2) return false;
+            try {
+                int animId = Integer.parseInt(args[0]);
+                Player small = Bukkit.getPlayer(args[1]);
+                if (small != null) animationManager.playAnimation(big, small, animId);
+            } catch (NumberFormatException e) {
+                big.sendMessage("§cИспользуй: /anim <номер> <игрок>");
+            }
+            return true;
+        });
+        
+        getCommand("carrypose").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player big)) return true;
+            if (args.length < 2) return false;
+            try {
+                int poseId = Integer.parseInt(args[0]);
+                Player small = Bukkit.getPlayer(args[1]);
+                if (small != null) carryManager.setCarryPose(big, small, poseId);
+            } catch (NumberFormatException e) {
+                big.sendMessage("§cИспользуй: /carrypose <номер> <игрок>");
+            }
+            return true;
+        });
+        
+        getCommand("sleeppose").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player small)) return true;
+            if (args.length < 2) return false;
+            try {
+                int poseId = Integer.parseInt(args[0]);
+                Player big = Bukkit.getPlayer(args[1]);
+                if (big != null) sleepManager.startSleeping(small, big, poseId);
+            } catch (NumberFormatException e) {
+                small.sendMessage("§cИспользуй: /sleeppose <номер> <игрок>");
+            }
+            return true;
+        });
+        
+        // ActionBar таск
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Player p : Bukkit.getOnlinePlayers()) {
+                    if (carryManager.isCarrying(p)) {
+                        p.sendActionBar("§e🔘 Нажми V чтобы открыть меню переноса");
+                    }
+                    if (shoeManager.isInShoe(p)) {
+                        p.sendActionBar("§7👟 Ты в кроссовке! Нажми X чтобы вылезти");
+                    }
+                    if (sleepManager.isUnderBlanket(p)) {
+                        p.sendActionBar("§b🛏️ Ты под одеялом! Нажми B чтобы вылезти");
+                    }
+                }
+            }
+        }.runTaskTimer(this, 0L, 20L);
+        
+        getLogger().info("§aTinyPlus Ultimate 100% версия включён!");
+    }
+    
+    public static TinyPlus getInstance() { return instance; }
+    public TinyPlayer getTinyPlayer() { return tinyPlayer; }
+    public PoseManager getPoseManager() { return poseManager; }
+    public CarryManager getCarryManager() { return carryManager; }
+    public SleepManager getSleepManager() { return sleepManager; }
+    public AnimationManager getAnimationManager() { return animationManager; }
+    public ShoeManager getShoeManager() { return shoeManager; }
+    
+    @EventHandler
+    public void onInteractEntity(PlayerInteractAtEntityEvent e) {
+        if (!(e.getRightClicked() instanceof Player small)) return;
+        Player big = e.getPlayer();
+        
+        if (!tinyPlayer.isSmall(small)) return;
+        
+        if (big.isSneaking()) {
+            animationManager.openMenu(big, small);
+        } else if (big.isSprinting()) {
+            shoeManager.shoveIntoShoe(big, small);
+        } else {
+            carryManager.pickUp(big, small);
+        }
+        e.setCancelled(true);
+    }
+    
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent e) {
+        Player p = e.getPlayer();
+        if (e.getItem() == null) return;
+        
+        String itemName = e.getItem().getType().toString();
+        String sitButton = getConfig().getString("buttons.sit-on-small");
+        String sitItem = getConfig().getString("buttons.sit");
+        String lieItem = getConfig().getString("buttons.lie");
+        String escapeShoe = getConfig().getString("buttons.escape-shoe");
+        String escapeBlanket = getConfig().getString("buttons.escape-blanket");
+        
+        if (itemName.equalsIgnoreCase(sitButton)) {
+            Player target = p.getWorld().getPlayers().stream()
+                .filter(pl -> tinyPlayer.isSmall(pl) && pl.getLocation().distance(p.getLocation()) < 2)
+                .findFirst().orElse(null);
+            if (target != null) poseManager.sitOnSmall(p, target);
+            e.setCancelled(true);
+        } else if (itemName.equalsIgnoreCase(sitItem)) {
+            poseManager.toggleSit(p);
+            e.setCancelled(true);
+        } else if (itemName.equalsIgnoreCase(lieItem)) {
+            poseManager.toggleLie(p);
+            e.setCancelled(true);
+        } else if (itemName.equalsIgnoreCase(escapeShoe)) {
+            shoeManager.removeFromShoe(p);
+            e.setCancelled(true);
+        } else if (itemName.equalsIgnoreCase(escapeBlanket)) {
+            sleepManager.escapeBlanket(p);
+            e.setCancelled(true);
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        carryManager.onQuit(e.getPlayer());
+        sleepManager.onQuit(e.getPlayer());
+        shoeManager.onQuit(e.getPlayer());
+        poseManager.onQuit(e.getPlayer());
+    }
+}
