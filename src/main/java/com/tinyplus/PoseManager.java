@@ -1,4 +1,3 @@
-// PoseManager.java
 package com.tinyplus;
 
 import org.bukkit.Bukkit;
@@ -44,8 +43,8 @@ public class PoseManager {
         sittingOnSmall.put(big.getUniqueId(), small.getUniqueId());
         sittingOnSmall.put(small.getUniqueId(), big.getUniqueId());
         big.teleport(small.getLocation().add(0, 0.8, 0));
-        big.setImmobile(true);
-        small.setImmobile(true);
+        big.setInvulnerable(true);
+        small.setInvulnerable(true);
         big.sendMessage(plugin.getConfig().getString("messages.sitting-on").replace("{big}", big.getName()).replace("{small}", small.getName()));
         small.sendMessage("§d" + big.getName() + " сел на тебя!");
     }
@@ -55,8 +54,8 @@ public class PoseManager {
         if (sittingOnSmall.containsKey(bigId)) {
             UUID smallId = sittingOnSmall.get(bigId);
             Player small = Bukkit.getPlayer(smallId);
-            big.setImmobile(false);
-            if (small != null) small.setImmobile(false);
+            big.setInvulnerable(false);
+            if (small != null) small.setInvulnerable(false);
             sittingOnSmall.remove(bigId);
             sittingOnSmall.remove(smallId);
             big.sendMessage("§aТы слез с маленького");
@@ -69,7 +68,7 @@ public class PoseManager {
         lying.remove(p.getUniqueId());
         if (sittingOnSmall.containsKey(p.getUniqueId())) {
             Player other = Bukkit.getPlayer(sittingOnSmall.get(p.getUniqueId()));
-            if (other != null) other.setImmobile(false);
+            if (other != null) other.setInvulnerable(false);
             sittingOnSmall.remove(p.getUniqueId());
         }
     }
