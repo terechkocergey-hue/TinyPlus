@@ -3,8 +3,6 @@ package com.tinyplus;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -14,6 +12,7 @@ public class CarryManager {
     private TinyPlus plugin;
     private Map<UUID, UUID> carrying = new HashMap<>();
     private Map<UUID, Integer> carryPose = new HashMap<>();
+    private Map<UUID, Boolean> isCarryingActive = new HashMap<>();
     private String[] poses;
     
     public CarryManager(TinyPlus plugin) {
@@ -29,8 +28,12 @@ public class CarryManager {
         if (carrying.containsKey(bigId)) drop(big);
         
         carrying.put(bigId, smallId);
-        small.setInvisible(true);
+        isCarryingActive.put(smallId, true);
+        
+        // НЕ делаем невидимым, а просто привязываем
         small.setInvulnerable(true);
+        small.setAllowFlight(true);
+        small.setFlying(true);
         
         big.sendMessage(plugin.getConfig().getString("messages.picked-up").replace("{player}", small.getName()));
         small.sendMessage(plugin.getConfig().getString("messages.was-picked-up").replace("{player}", big.getName()));
@@ -78,6 +81,8 @@ public class CarryManager {
             case 6: small.teleport(big.getLocation().add(0, 0.7, -0.3)); break;
             default: small.teleport(big.getLocation().add(0, 1.2, 0));
         }
+        // Сбрасываем скорость, чтобы не трясло
+        small.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
     }
     
     private void startCarryUpdateTask() {
@@ -95,7 +100,7 @@ public class CarryManager {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0L, 5L);
+        }.runTaskTimer(plugin, 0L, 10L); // Увеличил интервал до 10 тиков (меньше нагрузки)
     }
     
     public void drop(Player big) {
@@ -104,13 +109,15 @@ public class CarryManager {
         
         Player small = Bukkit.getPlayer(carrying.get(bigId));
         if (small != null) {
-            small.setInvisible(false);
             small.setInvulnerable(false);
+            small.setAllowFlight(false);
+            small.setFlying(false);
             small.teleport(big.getLocation().add(0, 1, 0));
             small.sendMessage(plugin.getConfig().getString("messages.dropped"));
         }
         carrying.remove(bigId);
         carryPose.remove(bigId);
+        if (small != null) isCarryingActive.remove(small.getUniqueId());
     }
     
     public boolean isCarrying(Player p) { return carrying.containsKey(p.getUniqueId()); }
