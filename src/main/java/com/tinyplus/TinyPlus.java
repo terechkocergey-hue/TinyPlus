@@ -55,25 +55,25 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
-        // Команда /stand (слезть с маленького)
+        // Команда /stand
         getCommand("stand").setExecutor((sender, cmd, label, args) -> {
             if (sender instanceof Player p) poseManager.standUp(p);
             return true;
         });
         
-        // НОВАЯ КОМАНДА /sit
+        // Команда /sit
         getCommand("sit").setExecutor((sender, cmd, label, args) -> {
             if (sender instanceof Player p) poseManager.toggleSit(p);
             return true;
         });
         
-        // НОВАЯ КОМАНДА /lie
+        // Команда /lie
         getCommand("lie").setExecutor((sender, cmd, label, args) -> {
             if (sender instanceof Player p) poseManager.toggleLie(p);
             return true;
         });
         
-        // НОВАЯ КОМАНДА /carry (взять ближайшего маленького)
+        // Команда /carry
         getCommand("carry").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player big)) return true;
             Player target = big.getWorld().getPlayers().stream()
@@ -87,14 +87,14 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
-        // НОВАЯ КОМАНДА /drop (опустить маленького)
+        // Команда /drop
         getCommand("drop").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player big)) return true;
             carryManager.drop(big);
             return true;
         });
         
-        // НОВАЯ КОМАНДА /poses (меню поз переноса)
+        // Команда /poses
         getCommand("poses").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player big)) return true;
             if (carryManager.isCarrying(big)) {
@@ -106,7 +106,7 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
-        // НОВАЯ КОМАНДА /animlist (меню анимаций)
+        // Команда /animlist
         getCommand("animlist").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player big)) return true;
             if (args.length == 0) {
@@ -122,7 +122,7 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
-        // Команда для анимаций
+        // Команда /anim
         getCommand("anim").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player big)) return true;
             if (args.length < 2) return false;
@@ -136,6 +136,7 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
+        // Команда /carrypose
         getCommand("carrypose").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player big)) return true;
             if (args.length < 2) return false;
@@ -149,6 +150,7 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
+        // Команда /sleeppose
         getCommand("sleeppose").setExecutor((sender, cmd, label, args) -> {
             if (!(sender instanceof Player small)) return true;
             if (args.length < 2) return false;
@@ -162,6 +164,17 @@ public class TinyPlus extends JavaPlugin implements Listener {
             return true;
         });
         
+        // Команда /visible - делает игрока видимым
+        getCommand("visible").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+            p.setInvisible(false);
+            p.setInvulnerable(false);
+            p.setAllowFlight(false);
+            p.setFlying(false);
+            p.sendMessage("§a✅ Теперь ты полностью видимый!");
+            return true;
+        });
+        
         // ActionBar таск
         new BukkitRunnable() {
             @Override
@@ -171,7 +184,7 @@ public class TinyPlus extends JavaPlugin implements Listener {
                         p.sendActionBar("§e🔘 /poses §f- меню поз, §e/drop §f- опустить");
                     }
                     if (shoeManager.isInShoe(p)) {
-                        p.sendActionBar("§7👟 Ты в кроссовке! /unsmoll чтобы вылезти");
+                        p.sendActionBar("§7👟 Ты в кроссовке! /visible чтобы вылезти");
                     }
                     if (sleepManager.isUnderBlanket(p)) {
                         p.sendActionBar("§b🛏️ Ты под одеялом! /stand чтобы встать");
