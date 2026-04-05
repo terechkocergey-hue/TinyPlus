@@ -40,24 +40,25 @@ public class SleepManager implements Listener {
     
     public void openSleepMenu(Player small, Player big) {
         String[] poses = plugin.getConfig().getStringList("sleep-poses").toArray(new String[0]);
-        Component.Builder builder = Component.text();
-        builder.append(Component.text("§8╔══════════════════════════════════════════════════════════╗\n"));
-        builder.append(Component.text("§l§b          🛌 ВЫБОР ПОЗЫ ДЛЯ СНА С §e§l" + big.getName() + "\n"));
-        builder.append(Component.text("§8╠══════════════════════════════════════════════════════════╣\n"));
+        Component message = Component.text()
+            .append(Component.text("§8╔══════════════════════════════════════════════════════════╗\n"))
+            .append(Component.text("§l§b          🛌 ВЫБОР ПОЗЫ ДЛЯ СНА С §e§l" + big.getName() + "\n"))
+            .append(Component.text("§8╠══════════════════════════════════════════════════════════╣\n"))
+            .build();
         
         for (int i = 0; i < poses.length; i++) {
             Component button = Component.text("§8[§a" + (i+1) + "§8] §f" + poses[i])
                 .hoverEvent(HoverEvent.showText(Component.text("§aНажми чтобы лечь в позе: " + poses[i])))
                 .clickEvent(ClickEvent.runCommand("/sleeppose " + i + " " + big.getName()));
-            builder.append(button);
+            message = message.append(button);
             if ((i + 1) % 3 == 0 || i == poses.length - 1) {
-                builder.append(Component.text("\n"));
+                message = message.append(Component.text("\n"));
             } else {
-                builder.append(Component.text("     "));
+                message = message.append(Component.text("     "));
             }
         }
-        builder.append(Component.text("§8╚══════════════════════════════════════════════════════════╝"));
-        small.sendMessage(builder.build());
+        message = message.append(Component.text("§8╚══════════════════════════════════════════════════════════╝"));
+        small.sendMessage(message);
     }
     
     public void startSleeping(Player small, Player big, int poseId) {
