@@ -1,4 +1,3 @@
-// ShoeManager.java
 package com.tinyplus;
 
 import org.bukkit.Bukkit;
@@ -15,7 +14,7 @@ public class ShoeManager {
     public void shoveIntoShoe(Player big, Player small) {
         inShoe.put(small.getUniqueId(), big.getUniqueId());
         small.setInvisible(true);
-        small.setImmobile(true);
+        small.setInvulnerable(true);
         big.sendMessage(plugin.getConfig().getString("messages.shoved-in-shoe").replace("{big}", big.getName()).replace("{small}", small.getName()));
         small.sendMessage("§7👟 Тебя засунули в кроссовок! Нажми X чтобы вылезти");
     }
@@ -23,7 +22,7 @@ public class ShoeManager {
     public void removeFromShoe(Player small) {
         inShoe.remove(small.getUniqueId());
         small.setInvisible(false);
-        small.setImmobile(false);
+        small.setInvulnerable(false);
         small.sendMessage(plugin.getConfig().getString("messages.escaped-shoe"));
         small.teleport(small.getLocation().add(0, 1, 0));
     }
