@@ -23,17 +23,17 @@ public class CarryManager {
     public void pickUp(Player big, Player small) {
         UUID bigId = big.getUniqueId();
         UUID smallId = small.getUniqueId();
-        
+
         if (carrying.containsKey(bigId)) drop(big);
-        
         carrying.put(bigId, smallId);
+        
         small.setInvulnerable(true);
         small.setAllowFlight(true);
         small.setFlying(true);
-        
+
         big.sendMessage(plugin.getConfig().getString("messages.picked-up").replace("{player}", small.getName()));
         small.sendMessage(plugin.getConfig().getString("messages.was-picked-up").replace("{player}", big.getName()));
-        
+
         openCarryMenu(big, small);
     }
     
@@ -118,7 +118,6 @@ public class CarryManager {
         return carrying.containsKey(p.getUniqueId()); 
     }
     
-    // ДОБАВЛЕННЫЙ МЕТОД
     public Player getCarriedPlayer(Player big) {
         UUID bigId = big.getUniqueId();
         if (carrying.containsKey(bigId)) {
