@@ -12,7 +12,6 @@ public class CarryManager {
     private TinyPlus plugin;
     private Map<UUID, UUID> carrying = new HashMap<>();
     private Map<UUID, Integer> carryPose = new HashMap<>();
-    private Map<UUID, Boolean> isCarryingActive = new HashMap<>();
     private String[] poses;
     
     public CarryManager(TinyPlus plugin) {
@@ -28,9 +27,6 @@ public class CarryManager {
         if (carrying.containsKey(bigId)) drop(big);
         
         carrying.put(bigId, smallId);
-        isCarryingActive.put(smallId, true);
-        
-        // НЕ делаем невидимым, а просто привязываем
         small.setInvulnerable(true);
         small.setAllowFlight(true);
         small.setFlying(true);
@@ -81,7 +77,6 @@ public class CarryManager {
             case 6: small.teleport(big.getLocation().add(0, 0.7, -0.3)); break;
             default: small.teleport(big.getLocation().add(0, 1.2, 0));
         }
-        // Сбрасываем скорость, чтобы не трясло
         small.setVelocity(new org.bukkit.util.Vector(0, 0, 0));
     }
     
@@ -100,7 +95,7 @@ public class CarryManager {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0L, 10L); // Увеличил интервал до 10 тиков (меньше нагрузки)
+        }.runTaskTimer(plugin, 0L, 10L);
     }
     
     public void drop(Player big) {
@@ -117,9 +112,22 @@ public class CarryManager {
         }
         carrying.remove(bigId);
         carryPose.remove(bigId);
-        if (small != null) isCarryingActive.remove(small.getUniqueId());
     }
     
-    public boolean isCarrying(Player p) { return carrying.containsKey(p.getUniqueId()); }
-    public void onQuit(Player p) { drop(p); }
+    public boolean isCarrying(Player p) { 
+        return carrying.containsKey(p.getUniqueId()); 
+    }
+    
+    // ДОБАВЛЕННЫЙ МЕТОД
+    public Player getCarriedPlayer(Player big) {
+        UUID bigId = big.getUniqueId();
+        if (carrying.containsKey(bigId)) {
+            return Bukkit.getPlayer(carrying.get(bigId));
+        }
+        return null;
+    }
+    
+    public void onQuit(Player p) { 
+        drop(p); 
+    }
 }
