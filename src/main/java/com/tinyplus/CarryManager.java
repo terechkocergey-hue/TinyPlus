@@ -3,6 +3,8 @@ package com.tinyplus;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -28,7 +30,7 @@ public class CarryManager {
         
         carrying.put(bigId, smallId);
         small.setInvisible(true);
-        small.setImmobile(true);
+        small.setInvulnerable(true);
         
         big.sendMessage(plugin.getConfig().getString("messages.picked-up").replace("{player}", small.getName()));
         small.sendMessage(plugin.getConfig().getString("messages.was-picked-up").replace("{player}", big.getName()));
@@ -37,24 +39,25 @@ public class CarryManager {
     }
     
     public void openCarryMenu(Player big, Player small) {
-        Component.Builder builder = Component.text();
-        builder.append(Component.text("§8╔══════════════════════════════════════════════════════════╗\n"));
-        builder.append(Component.text("§l§6          🤲 ВЫБОР ПОЗЫ ПЕРЕНОСА ДЛЯ §e§l" + small.getName() + "\n"));
-        builder.append(Component.text("§8╠══════════════════════════════════════════════════════════╣\n"));
+        Component message = Component.text()
+            .append(Component.text("§8╔══════════════════════════════════════════════════════════╗\n"))
+            .append(Component.text("§l§6          🤲 ВЫБОР ПОЗЫ ПЕРЕНОСА ДЛЯ §e§l" + small.getName() + "\n"))
+            .append(Component.text("§8╠══════════════════════════════════════════════════════════╣\n"))
+            .build();
         
         for (int i = 0; i < poses.length; i++) {
             Component button = Component.text("§8[§a" + (i+1) + "§8] §f" + poses[i])
                 .hoverEvent(HoverEvent.showText(Component.text("§aНажми чтобы посадить на: " + poses[i])))
                 .clickEvent(ClickEvent.runCommand("/carrypose " + i + " " + small.getName()));
-            builder.append(button);
+            message = message.append(button);
             if ((i + 1) % 3 == 0 || i == poses.length - 1) {
-                builder.append(Component.text("\n"));
+                message = message.append(Component.text("\n"));
             } else {
-                builder.append(Component.text("     "));
+                message = message.append(Component.text("     "));
             }
         }
-        builder.append(Component.text("§8╚══════════════════════════════════════════════════════════╝"));
-        big.sendMessage(builder.build());
+        message = message.append(Component.text("§8╚══════════════════════════════════════════════════════════╝"));
+        big.sendMessage(message);
     }
     
     public void setCarryPose(Player big, Player small, int poseId) {
@@ -102,7 +105,7 @@ public class CarryManager {
         Player small = Bukkit.getPlayer(carrying.get(bigId));
         if (small != null) {
             small.setInvisible(false);
-            small.setImmobile(false);
+            small.setInvulnerable(false);
             small.teleport(big.getLocation().add(0, 1, 0));
             small.sendMessage(plugin.getConfig().getString("messages.dropped"));
         }
