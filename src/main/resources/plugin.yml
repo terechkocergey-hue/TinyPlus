@@ -42,6 +42,9 @@ commands:
   sleeppose:
     description: Выбрать позу для сна
     usage: /sleeppose <номер> <игрок>
+      visible:
+    description: Сделать себя полностью видимым
+    usage: /visible
 
 permissions:
   tinyplus.use:
